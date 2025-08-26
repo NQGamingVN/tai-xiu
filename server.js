@@ -6,7 +6,8 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.static('public')); // index.html ở đây
-
+const cors = require('cors');
+app.use(cors());
 app.post('/api/predict', async (req, res) => {
   try {
     const prompt = req.body.prompt;

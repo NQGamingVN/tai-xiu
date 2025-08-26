@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Tool Tài/Xỉu - DeepSeek V3</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 900px; margin: auto; padding: 20px; background: #f5f5f5; }
+    body { font-family: Arial; max-width: 900px; margin: auto; padding: 20px; background: #f5f5f5; }
     h2 { color: #333; }
     button { padding: 8px 16px; margin-bottom: 10px; border: none; background: #007BFF; color: white; cursor: pointer; border-radius: 5px; }
     button:hover { background: #0056b3; }
@@ -19,8 +19,7 @@
 
 <script>
 const logDiv = document.getElementById("log");
-// Thay bằng URL backend Render của bạn
-const backendUrl = "https://tai-xiu-e7ez.onrender.com/api/predict";
+const backendUrl = "https://tai-xiu-e7ez.onrender.com/api/predict"; // URL backend Render
 
 function log(msg) {
   const time = new Date().toLocaleTimeString();
@@ -37,7 +36,6 @@ async function runTool() {
     const list = data.list || [];
     log(`Đã fetch ${list.length} phiên`);
 
-    // Chuyển tất cả Tài/Xỉu thành 0/1
     const converted = list.map(item => item.resultTruyenThong === "TAI" ? 1 : 0);
     log("Chuyển đổi thành 0/1 (tất cả phiên): " + converted.join(", "));
 
@@ -45,7 +43,6 @@ async function runTool() {
 
     log("Gửi dữ liệu tới backend DeepSeek V3...");
 
-    // Gọi backend Render
     const gptResponse = await fetch(backendUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

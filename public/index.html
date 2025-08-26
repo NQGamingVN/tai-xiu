@@ -1,1 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Tool Tài/Xỉu - DeepSeek V3</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: auto; padding: 20px; background: #f5f5f5; }
+    h2 { color: #333; }
+    button { padding: 8px 16px; margin-bottom: 10px; border: none; background: #007BFF; color: white; cursor: pointer; border-radius: 5px; }
+    button:hover { background: #0056b3; }
+    #log { background: #1e1e1e; color: #fff; padding: 10px; height: 400px; overflow-y: auto; white-space: pre-wrap; border-radius: 5px; }
+  </style>
+</head>
+<body>
+
+<h2>Tool Tài/Xỉu - DeepSeek V3</h2>
+<button onclick="runTool()">Fetch & Dự đoán</button>
+<div id="log">[Log] Sẵn sàng...</div>
+
+<script>
+const logDiv = document.getElementById("log");
+// Thay bằng URL backend Render của bạn
 const backendUrl = "https://tai-xiu-e7ez.onrender.com/";
+
+function log(msg) {
+  const time = new Date().toLocaleTimeString();
+  logDiv.textContent += `\n[${time}] ${msg}`;
+  logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+async function runTool() {
+  log("Đang fetch dữ liệu Tài/Xỉu...");
+  try {
+    const response = await fetch('https://wtx.tele68.com/v1/tx/sessions?cp=R&cl=R&pf=web&at=82cc11c637dd83521a4f9339130600be&limit=105');
+    if(!response.ok) throw new Error("HTTP " + response.status);
+    const data = await response.json();
+    const list = data.list || [];
+    log(`Đã fetch ${list.length} phiên`);
+
+    // Chuyển tất cả Tài/Xỉu thành 0/1
+    const converted = list.map(item => item.resultTruyenThong === "TAI" ? 1 : 0);
+    log("Chuyển đổi thành 0/1 (tất cả phiên): " + converted.join(", "));
+
+    const prompt = `List kết quả gần nhất (0=Xỉu,1=Tài):\n[${converted.join(",")}]\n\nPhân tích pattern nội bộ, dự đoán phiên tiếp theo. Chỉ in 1 chữ: "Tài" hoặc "Xỉu".`;
+
+    log("Gửi dữ liệu tới backend DeepSeek V3...");
+
+    // Gọi backend Render
+    const gptResponse = await fetch(backendUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt })
+    });
+
+    if(!gptResponse.ok) throw new Error("Backend HTTP " + gptResponse.status);
+    const gptData = await gptResponse.json();
+
+    const output = gptData?.choices?.[0]?.text || "(Không nhận được kết quả)";
+    log(`Nhận dự đoán từ DeepSeek V3: ${output}`);
+
+  } catch(err) {
+    log("Lỗi: " + err.message);
+  }
+}
+</script>
+
+</body>
+</html>
